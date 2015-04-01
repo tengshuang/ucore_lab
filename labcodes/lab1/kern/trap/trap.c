@@ -46,6 +46,18 @@ idt_init(void) {
       *     You don't know the meaning of this instruction? just google it! and check the libs/x86.h to know more.
       *     Notice: the argument of lidt is idt_pd. try to find it!
       */
+    extern uintptr_t __vectors[];
+    int i;
+    for (i = 0; i < sizeof(idt) / sizeof(struct gatedesc); i ++) {
+    SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);
+    }
+    // DPL_KERNEL is kernel text 优先级
+    //GD_KTEXT 为段选择子
+    //__vectors[i] 为vector.s规定的偏移
+    // set for switch from user to kernel
+    SETGATE(idt[T_SWITCH_TOK], 0, GD_KTEXT, __vectors[T_SWITCH_TOK], DPL_USER);
+    // load the IDT
+    lidt(&idt_pd);
 }
 
 static const char *
@@ -141,12 +153,16 @@ trap_dispatch(struct trapframe *tf) {
 
     switch (tf->tf_trapno) {
     case IRQ_OFFSET + IRQ_TIMER:
-        /* LAB1 YOUR CODE : STEP 3 */
+        /* LAB1 2012011270 : STEP 3 */
         /* handle the timer interrupt */
         /* (1) After a timer interrupt, you should record this event using a global variable (increase it), such as ticks in kern/driver/clock.c
          * (2) Every TICK_NUM cycle, you can print some info using a funciton, such as print_ticks().
          * (3) Too Simple? Yes, I think so!
          */
+	 ticks ++;
+	if (ticks % TICK_NUM == 0) {
+	print_ticks();
+	}
         break;
     case IRQ_OFFSET + IRQ_COM1:
         c = cons_getc();
@@ -156,7 +172,7 @@ trap_dispatch(struct trapframe *tf) {
         c = cons_getc();
         cprintf("kbd [%03d] %c\n", c, c);
         break;
-    //LAB1 CHALLENGE 1 : YOUR CODE you should modify below codes.
+    //LAB1 CHALLENGE 1 : 2012011270 you should modify below codes.
     case T_SWITCH_TOU:
     case T_SWITCH_TOK:
         panic("T_SWITCH_** ??\n");
