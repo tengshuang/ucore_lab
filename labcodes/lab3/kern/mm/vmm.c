@@ -347,7 +347,7 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
     ret = -E_NO_MEM;
 
     pte_t *ptep=NULL;
-    /*LAB3 EXERCISE 1: YOUR CODE
+    /*LAB3 EXERCISE 1:2012011270
     * Maybe you want help comment, BELOW comments can help you finish the code
     *
     * Some Useful MACROs and DEFINEs, you can use them in below implementation.
@@ -396,6 +396,39 @@ do_pgfault(struct mm_struct *mm, uint32_t error_code, uintptr_t addr) {
         }
    }
 #endif
+    
+    ptep = get_pte(mm->pgdir, addr, 1);
+    if(ptep == NULL){
+    	cprintf("get_pte in do_pgfault failed\n");
+    	return ret;
+    }
+    if (*ptep == 0) {
+    	struct Page* P = pgdir_alloc_page(mm->pgdir, addr, perm);
+    	if (P == NULL) {
+		   cprintf("pgdir_alloc_page in do_pgfault failed\n");
+		   return ret;
+	   }
+   }
+    else{
+		 	 //(1）According to the mm AND addr, try to load the content of right disk page
+			 //    into the memory which page managed.
+			 //(2) According to the mm, addr AND page, setup the map of phy addr <---> logical addr
+			 //(3) make the page swappable.
+    	 if(swap_init_ok) {
+			struct Page *page=NULL;
+			ret = swap_in(mm, addr, &page);
+			if (ret != 0) {
+				cprintf("swap_in in do_pgfault failed\n");
+				return ret;
+			}
+			page_insert(mm->pgdir, page, addr, perm);
+			swap_map_swappable(mm, addr, page, 1);
+		}
+		else {
+			cprintf("no swap_init_ok but ptep is %x, failed\n",*ptep);
+			return ret;
+		}
+    }
    ret = 0;
 failed:
     return ret;
