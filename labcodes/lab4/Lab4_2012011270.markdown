@@ -1,0 +1,125 @@
+# Lab4 report
+
+## [练习0] 填写已有实验
+>已完成。
+## [练习1] 分配并初始化一个进程控制块（需要编码）
+[练习1.1] 请在实验报告中简要说明你的设计实现过程
+>首先找到进程控制块对应的数据结构proc_struct,阅读代码了解到：
+```
+state //进程状态 
+pid //进程pid从0开始，初始化时赋值为-1，表示未被创建
+runs //该进程运行次数，初始化为0
+kstack// 是否为内核线程 初始化为0 
+need_resched //是否需要释放cpu恢复就绪状态 初始化为0
+parent = NULL //父进程是谁
+mm = NULL //内存地址 COW机制先不分配空间
+memset(&(proc->context), 0, sizeof(struct context))//上下文初始化为0
+tf = NULL //与中断和特权级切换，进程切换有关的堆栈及上下文
+cr3 = boot_cr3 //硬件接口获得线程的物理基址
+flags = 0 //进程标识
+memset(proc->name, 0, PROC_NAME_LEN); //进程名字初始化 最大长度为15
+```
+>按照以上的信息初始化进程控制块
+
+[练习1.2] 请说明proc_struct中struct context context和struct trapframe *tf成员变量含义和在本实验中的作用是啥？
+
+> 
+>- context可以保存一个内核线程上下文的信息（常用寄存器)，当使用在switch_to函数中,该函数写在switch.S中，作用是保存前一进程相应寄存器的值，将后一进程值压入寄存器中。通过popl 0(%eax）实现。
+>- trapframe可以保存中断信息（如中断函数处理的入口地址），线程上下文信息（寄存器的值），尤其是特权级转换时，保存内核栈ss，esp的值。
+具体使用在kernel_thread中，根据父进程的寄存器值创建子线程。
+执行子线程创建函数do_fork()，并保存子线程执行的入口地址。
+
+
+## [练习2] 为新创建的内核线程分配资源（需要编码）
+
+[练习2.1] 请在实验报告中简要说明你的设计实现过程。
+
+```
+//判断是否已存在进程数超过给定要求，失败返回-1
+if (nr_process > MAX_PROCESS) goto fork_out； 
+//为新进程申请进程块,失败返回-1
+if((proc = alloc_proc()) == NULL) goto fork_out;
+//设置当前进程为新进程的父进程：
+proc->parent = current； 
+//为进程分配一个内核栈，失败回收分配的进程控制块：
+ if (setup_kstack(proc) != 0) goto bad_fork_cleanup_proc;
+//复制原进程内存管理信息到新进程，失败回收上步创建的堆栈：
+if (copy_mm(clone_flags, proc) != 0) goto bad_fork_cleanup_kstack; 
+//复制原进程上下文到新进程：
+copy_thread(proc, stack, tf)； 
+bool flag； 
+//关闭中断，保护进程正常添加链表，防止中断号被重复分配（原子性）
+local_intr_save(flag)；
+//将新进程添加到进程列表：
+proc -> pid = get_pid();
+hash_proc(proc);
+list_add(&proc_list, &(proc->list_link));
+//内核线程创建成功，线程数量刷新
+nr_process ++;
+//打开中断响应
+local_intr_restore(flag);
+//唤醒父进程
+wakeup_proc(proc);
+//返回子线程id
+ret = proc -> pid;
+
+```
+[练习2.2]请说明ucore是否做到给每个新fork的线程一个唯一的id？请说明你的分析和理由。
+
+> 能够保证。
+阅读get_id()代码段。
+MAX_PID为允许的最大进程号。
+last_pid为可能的新线程中断号。
+next_safe规定last_pid的上限值。
+设real为get_pid()返回的值，即真正的线程号。
+首先将两者初始化为MAX_PID。
+++last_pid,如果大于MAX_PID，则设为1，从头开始重新遍历（由于nr_process < max_process，所以一定在MAX_PID范围可以找到合法的线程编号），并且进入inside函数。
+inside函数的作用是恢复next_safe为max_pid的值。
+repeat函数的作用遍历线程的列表，从列表中取出一个线程proc_pid，与last_pid比较。
+
+>- 若相等，表示线程编号被占用，则检验++last_pid，这时last_pid的值可能超过next_safe规定的阈值，说明next_safe阈值过小，将next_dafe重设为最大。同时last_pid的值甚至可能超过MAX_PID的值，表明错过了real（last_pid > real)，要将last_pid置1，返回inside重新扫描。
+>- 若不相等，如果proc->pid > last_pid && next_safe > proc->pid，说明real可能介于last_pid和proc->pid之间，则缩小next_safe的值next_safe = proc->pid;该句话作用是保证找到的last_id为最小，且避免进程号在列表中乱序存放。
+>
+直到遍历所有的列表，程序退出，返回last_pid的值。
+
+## [练习3] 阅读代码，理解 proc_run 函数和它调用的函数如何完成进程切换的。
+[练习3.1] 请在实验报告中简要说明你对proc_run函数的分析。
+```
+ if (proc != current) {
+        bool intr_flag;//中断控制符号保存
+        struct proc_struct *prev = current, *next = proc;//保存前一运行线程   保存将要运行的线程
+        local_intr_save(intr_flag);//关闭中断
+        {
+            current = proc;//将proc选中为运行的进程
+            load_esp0(next->kstack + KSTACKSIZE); //将堆栈的指针指向将要运行线程的栈顶。
+            lcr3(next->cr3);//页表基址物理地址从cr3寄存器中读出
+            switch_to(&(prev->context), &(next->context));//两线程进行切换
+        }
+        local_intr_restore(intr_flag);//开启中断
+    }
+```
+[练习3.2] 在本实验的执行过程中，创建且运行了几个内核线程？
+>创建了两个内核线程，0号idleproc和1号initproc两个内核线程。
+
+[练习3.3] 语句local_intr_save(intr_flag);....local_intr_restore(intr_flag);在这里有何作用?请说明理由。
+>关闭中断和开启中断。
+
+>- 作用：防止进程转换的过程被系统打断，造成冲突。
+>- 理由：
+中断关闭，flag为TRUE
+>
+local_intr_save(intr_flag) —> __intr_save —> read_eflags()
+（读取eflags寄存器的值，并保存在TSS中）—> intr_disable —> cli()(关闭中断)。
+>
+local_intr_restore —> __intr_restore（根据flag为TRUE，开启中断）—>intr_enable —> sti() 
+
+## 与参考答案的区别：
+> 按照提示信息填写代码，参考了标准答案中对于中断帧实现的部分，对于为线程分配空间时tf初始化为NULL，context为0，有了区分。
+
+## 重要的知识点
+
+> 进程控制块的创建，内核线程程的创建，切换与调用过程，ucore进程与线程之间的联系，生成pid，进行线程切换堆栈信息，上下文信息的保存，关闭开启中断，减少冲突。进一步理解内核线程的生命周期。
+
+
+
+
