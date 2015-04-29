@@ -9,7 +9,7 @@
    usually split, and the remainder added to the list as another free block.
    Please see Page 196~198, Section 8.2 of Yan Wei Ming's chinese book "Data Structure -- C programming language"
 */
-// LAB2 EXERCISE 1: YOUR CODE
+// LAB2 EXERCISE 1: 2012011270
 // you should rewrite functions: default_init,default_init_memmap,default_alloc_pages, default_free_pages.
 /*
  * Details of FFMA
@@ -55,20 +55,22 @@
  *               (5.3) try to merge low addr or high addr blocks. Notice: should change some pages's p->property correctly.
  */
 free_area_t free_area;
-
+//free_area 管理区描述符
+//free_list 管理区描述符指针，指向page
 #define free_list (free_area.free_list)
 #define nr_free (free_area.nr_free)
 
 static void
 default_init(void) {
-    list_init(&free_list);
-    nr_free = 0;
+    list_init(&free_list); //指向页框块的双向循环链表free_list初始化
+    nr_free = 0; //开始时空闲页框块总数为 0（未形成双向循环链表）
 }
-
+//使用参数 每个连续地址空闲块到起始页, 页个数初始化双向循环链表
 static void
 default_init_memmap(struct Page *base, size_t n) {
     assert(n > 0);
     struct Page *p = base;
+    //从base开始遍历所有页框块
     for (; p != base + n; p ++) {
         assert(PageReserved(p));
         p->flags = p->property = 0;
@@ -88,11 +90,16 @@ default_alloc_pages(size_t n) {
     }
     struct Page *page = NULL;
     list_entry_t *le = &free_list;
+    int flag = 0;
     while ((le = list_next(le)) != &free_list) {
         struct Page *p = le2page(le, page_link);
         if (p->property >= n) {
-            page = p;
-            break;
+        	if (flag == 0) {
+        		page = p;
+        		flag = 1;
+        	} else if (p < page) {
+        		page = p;
+        	}
         }
     }
     if (page != NULL) {
@@ -100,6 +107,7 @@ default_alloc_pages(size_t n) {
         if (page->property > n) {
             struct Page *p = page + n;
             p->property = page->property - n;
+            SetPageProperty(p);
             list_add(&free_list, &(p->page_link));
     }
         nr_free -= n;

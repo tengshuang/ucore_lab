@@ -1,0 +1,101 @@
+# Lab5 report
+
+## [练习1]
+加载应用程序并执行
+
+1-0 设计实现过程
+```
+//设置trapframe的CS，DS，ES，SS段为用户段
+//设置esp为用户栈顶地址
+//设置eip为ELF入口位置
+//设置tf_eflags为FL_IF，允许中断
+/* LAB5:EXERCISE1 YOUR CODE
+     * should set tf_cs,tf_ds,tf_es,tf_ss,tf_esp,tf_eip,tf_eflags
+     * NOTICE: If we set trapframe correctly, then the user level process can return to USER MODE from kernel. So
+     *          tf_cs should be USER_CS segment (see memlayout.h)
+     *          tf_ds=tf_es=tf_ss should be USER_DS segment
+     *          tf_esp should be the top addr of user stack (USTACKTOP)
+     *          tf_eip should be the entry point of this binary program (elf->e_entry)
+     *          tf_eflags should be set to enable computer to produce Interrupt
+     */
+    tf->tf_cs = USER_CS;
+    tf->tf_ds = tf->tf_es = tf->tf_ss = USER_DS;
+    tf->tf_esp = USTACKTOP;
+    tf->tf_eip = elf->e_entry;
+    tf->tf_eflags = FL_IF;
+```
+
+1-1 请描述当创建一个用户态进程并加载了应用程序后，CPU是如何让这个应用程序最终在用户态执行起来的。
+即这个用户态进程被ucore选择占用CPU执行（RUNNING态）到具体执行应用程序第一条指令的整个经过。
+```
+1）第一个用户进程是由第二个内核线程initproc通过把hello应用程序执行码覆盖到initproc的用户虚拟内存空间来创建的，当户进程的用户环境已经搭建完毕后，initproc将按产生系统调用的函数调用路径原路返回，执行中断返回指令“iret”，将切换到用户进程hello的第一条语句位置_start处开始执行。
+2）init_main通过do_fork、do_execv创建用户新进程
+创建的新进程被插入队列等待执行，通过schedule的选择新的进程获准执行
+```
+
+## [练习2]
+创建子进程的函数do_fork在执行中将拷贝当前进程（即父进程）的用户内存地址空间中的合法内容到新进程中（子进程），完成内存资源的复制。具体是通过copy_range函数（位于kern/mm/pmm.c中）实现的，请补充copy_range的实现，确保能够正确执行。
+> 答：根据注释可知，首先得到page和npage的内核虚拟地址src_kvaddr和dst_kvaddr，然后在利用memcpy将src_kvaddr赋值到dst_kvaddr，大小为PGSIZE，最后建立物理地址与线性地址的映射，实现代码如下所示：
+```
+/* LAB5:EXERCISE2 2012011361
+ * replicate content of page to npage, build the map of phy addr of nage with the linear addr start
+ *
+ * Some Useful MACROs and DEFINEs, you can use them in below implementation.
+ * MACROs or Functions:
+ *    page2kva(struct Page *page): return the kernel vritual addr of memory which page managed (SEE pmm.h)
+ *    page_insert: build the map of phy addr of an Page with the linear addr la
+ *    memcpy: typical memory copy function
+ *
+ * (1) find src_kvaddr: the kernel virtual address of page
+ * (2) find dst_kvaddr: the kernel virtual address of npage
+ * (3) memory copy from src_kvaddr to dst_kvaddr, size is PGSIZE
+ * (4) build the map of phy addr of  nage with the linear addr start
+ */
+void * src_kvaddr = page2kva(page);
+void * dst_kvaddr = page2kva(npage);
+memcpy(dst_kvaddr, src_kvaddr, PGSIZE);
+ret = page_insert(to, npage, start, perm);
+```
+父进程复制自己的内存空间给子进程
+请在实验报告中简要说明如何设计实现”Copy on Write 机制“，给出概要设计，鼓励给出详细设计。
+```
+父进程创建子进程时不复制共享地址空间，直接共享，可以设置成只读模式避免发生误写
+当其中一方发生写操作时，将共享空间进行复制，父子各得到一份，之后双方在各自空间内进行自由读写
+具体的:
+在dup_mmap中不直接复制vma到nvma，而使用vma的指针，这样的话就可以先共用同一块资源，当某使用者需要对该资源进行写操作时，就新建一个vma，并调用copy_range复制数据，并继续进行写操作对内存进行修改。
+```
+
+## [练习3]
+阅读分析源代码，理解进程执行 fork/exec/wait/exit 的实现，以及系统调用的实现
+
+3-1 请分析fork/exec/wait/exit在实现中是如何影响进程的执行状态的？
+```
+fork:
+创建子线程，并复制mm等数据，并唤醒新线程 “-->do_fork-->wakeup_proc”
+exec:
+在fork之后，进程执行某一程序，通过load_icode加载一个程序并刷新mm
+wait:
+等待一个或多个处于僵尸状态的子进程并释放资源，如果子进程还在运行，则设置自己的状态为睡眠，等待被下次唤醒继续执行
+exit:
+通过调用exit_mmap和put_pgdir和mm_destroy来释放进程的大部分资源，并将自己的状态设置为僵尸进程，然后唤醒父进程做最后的资源回收；如果当前进程还有子进程，则需要把这些子进程的父进程指针设置为内核线程initproc，且各个子进程指针需要插入到initproc的子进程链表中，如果某个子进程的执行状态是PROC_ZOMBIE，则需要唤醒initproc来完成对此子进程的最后回收工作。
+```
+
+3-2 请给出ucore中一个用户态进程的执行状态生命周期图（包执行状态，执行状态之间的变换关系，
+以及产生变换的事件或函数调用）。（字符方式画即可）
+```
+PROC_UNINIT -> exec -> PROC_RUNNABLE -> run -> (father)fork -> wait sons -> exit 
+(son)fork -> run -> over -> PROC_ZOMBIE
+```
+
+## [与参考答案的区别]
+```
+思路差不多，代码实现上略有不同。
+```
+
+## [实验中重要的知识点]
+```
+用户进程创建,内核到用户态切换
+系统调用框架的实现机制
+中断调用
+ucore如何实现系统调用sys_fork/sys_exec/sys_exit/sys_wait来进行进程管理
+```
