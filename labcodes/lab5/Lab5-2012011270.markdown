@@ -37,7 +37,7 @@
 创建子进程的函数do_fork在执行中将拷贝当前进程（即父进程）的用户内存地址空间中的合法内容到新进程中（子进程），完成内存资源的复制。具体是通过copy_range函数（位于kern/mm/pmm.c中）实现的，请补充copy_range的实现，确保能够正确执行。
 > 答：根据注释可知，首先得到page和npage的内核虚拟地址src_kvaddr和dst_kvaddr，然后在利用memcpy将src_kvaddr赋值到dst_kvaddr，大小为PGSIZE，最后建立物理地址与线性地址的映射，实现代码如下所示：
 ```
-/* LAB5:EXERCISE2 2012011361
+/* LAB5:EXERCISE2 2012011270
  * replicate content of page to npage, build the map of phy addr of nage with the linear addr start
  *
  * Some Useful MACROs and DEFINEs, you can use them in below implementation.
