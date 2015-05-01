@@ -1,0 +1,97 @@
+# Lab6 report
+>* 理解操作系统的调度管理机制
+>* 熟悉 ucore 的系统调度器框架，以及缺省的Round-Robin 调度算法
+>* 基于调度器框架实现一个(Stride Scheduling)调度算法来替换缺省的调度算法
+
+标签（空格分隔）： ucore-lab
+
+---
+
+## 练习0：填写已有实验
+
+本实验依赖实验1/2/3/4/5。请把你做的实验1/2/3/4/5的代码填入本实验中代码中有“LAB1”/“LAB2”/“LAB3”/“LAB4”“LAB5”的注释相应部分。并确保编译通过。注意：为了能够正确执行lab6的测试应用程序，可能需对已完成的实验1/2/3/4/5的代码进行进一步改进。
+> 答：已完成前5次lab的移植工作，部分需要更新如下所示：
+(1). LAB1:EXERCISE3的kern/trap/trap.c中需要更新：
+```
+case IRQ_OFFSET + IRQ_TIMER:
+    ticks++;
+    assert(current != NULL);
+    sched_class_proc_tick(current);
+    break;
+```
+(2). LAB4:EXERCISE1的kern/process/proc.c中的alloc_proc需要更新：
+```
+//LAB6 YOUR CODE : (update LAB5 steps)
+/*
+ * below fields(add in LAB6) in proc_struct need to be initialized
+ * struct run_queue *rq;            // running queue contains Process
+ * list_entry_t run_link;           // the entry linked in run queue
+ * int time_slice;                  // time slice for occupying the CPU
+ * skew_heap_entry_t lab6_run_pool; // FOR LAB6 ONLY: the entry in the run pool
+ * uint32_t lab6_stride;            // FOR LAB6 ONLY: the current stride of the process
+ * uint32_t lab6_priority;          // FOR LAB6 ONLY: the priority of process, set by lab6_set_priority(uint32_t)
+ */
+proc->rq = NULL;
+list_init(&(proc->run_link));
+proc->time_slice = 0;
+skew_heap_init(&(proc->lab6_run_pool));
+proc->lab6_stride = 0;
+proc->lab6_priority = 0;
+```
+
+---
+
+## [练习1]
+使用 Round Robin 调度算法
+
+1-1 请理解并分析sched_calss中各个函数指针的用法，并接合Round Robin 调度算法描ucore的调度执行过程
+```
+init：初始化队列，将队列置为空
+enqueue：将进程加入队列
+dequeue：将进程从队列中移除
+pick_next：从队列中选出下一个执行的进程，即调度过程的实现
+proc_tick：控制时间，设置是否需要调度
+
+ucore中schedule函数完成了与调度框架和调度算法相关的三件事情：
+把当前继续占用CPU执行的运行进程放入到就绪进程队列中，从就绪进程队列中选择一个“合适”就绪进程，把这个“合适”的就绪进程从就绪进程队列中摘除。
+RR_enqueue把某进程的进程控制块指针放入到rq的队尾，且如果进程控制块的时间片为0，则需要把它重置为rq成员变量max_time_slice；
+RR_pick_next选取就绪进程队列rq中的队头队列元素，并把队列元素转换成进程控制块指针；
+RR_dequeue把就绪进程队列rq的进程控制块指针的队列元素删除，并把表示就绪进程个数的proc_num减一；
+RR_proc_tick函数在每次time到时后，trap函数将会间接调用此函数来把当前执行进程的时间片time_slice减一，如果time_slice降到零，则设置此进程成员变量need_resched标识为1，在下一次中断到来后执行trap函数时，会因need_resched为1而执行schedule函数，从而把当前执行进程放回到就绪队列的末尾，而从就绪队列头取出在就绪队列上等待时间最久的那个就绪进程执行。
+```
+
+1-2 请在实验报告中简要说明如何设计实现”多级反馈队列调度算法“，给出概要设计，鼓励给出详细设计
+```
+1.设计n个队列，每个队列对应不同优先级，假设队列q1有最高优先级，qn优先级最低
+2.当新进程生成并加入队列时，将它加入q1
+3.进程控制块记录该进程上次是从哪个队列中被调出的，当进程用尽时间片时，将它加入低一优先级的队列中
+4.不同优先级队列时间片长度不同，长度随优先级递减，即每个队列实现时间片轮转算法。
+5.调度时优先调度高优先级队列，注意低优先级进程出现饥饿的现象。
+```
+
+## [练习2]
+实现 Stride Scheduling 调度算法
+
+2-0 设计实现过程
+```
+注意此部分run queue使用左斜堆实现。
+1.BIG_STRIDE:设为最大int值0x7FFFFFFF
+2.init:将队列置空，计数置为0
+3.enqueue:将proc加入队列，检查并设置它的time_slice，rq，最后将proc_num加1
+4.dequeue:将proc移除队列，并将proc_num减1
+5.pick_next:用le2proc从rq->lab6_run_pool中选出合适的进程，并设置增加其lab6_stride为BIG_STRIDE/p->lab6_priority，
+  如果进程优先级是0，则将其视为1
+6.proc_tick:减少其time_slice，若归零则重新调度
+```
+
+## [与参考答案的区别]
+```
+trap.c中trap_dispatch函数的case IRQ_OFFSET + IRQ_TIMER实现与参考答案不同，用到了sched_class_proc_tick函数。
+```
+
+## [实验中重要的知识点]
+```
+ucore 的系统调度器框架
+Round-Robin 调度算法
+Stride Scheduling调度算法
+```
