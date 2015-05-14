@@ -61,7 +61,7 @@ idt_init(void) {
     }
     SETGATE(idt[T_SYSCALL], 1, GD_KTEXT, __vectors[T_SYSCALL], DPL_USER);
     lidt(&idt_pd);
-     /* LAB5 2012011270 */
+     /* LAB5 2012011277 */
      //you should update your lab1 code (just add ONE or TWO lines of code), let user app to use syscall to get the service of ucore
      //so you should setup the syscall interrupt gate in here
 }

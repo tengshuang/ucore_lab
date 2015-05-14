@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<workbench progressCount="20" version="2.0">
+<workbench progressCount="24" version="2.0">
 <workbenchAdvisor/>
 <window height="744" maximized="true" width="1024" x="65" y="24">
 <fastViewData fastViewLocation="1024"/>
@@ -13,12 +13,13 @@
 <coolItem id="org.eclipse.debug.ui.launch.toolbar" itemType="typeToolBarContribution" x="-1" y="-1"/>
 <coolItem id="org.eclipse.debug.ui.launchActionSet" itemType="typeToolBarContribution" x="60" y="30"/>
 <coolItem id="org.eclipse.debug.ui.main.toolbar" itemType="typeToolBarContribution" x="-1" y="-1"/>
-<coolItem id="org.eclipse.search.searchActionSet" itemType="typeToolBarContribution" x="88" y="30"/>
+<coolItem id="org.eclipse.search.searchActionSet" itemType="typeToolBarContribution" x="60" y="30"/>
 <coolItem id="org.eclipse.ui.edit.text.actionSet.presentation" itemType="typeToolBarContribution" x="40" y="30"/>
 <coolItem id="group.nav" itemType="typeGroupMarker"/>
 <coolItem id="org.eclipse.ui.workbench.navigate" itemType="typeToolBarContribution" x="232" y="30"/>
 <coolItem id="group.editor" itemType="typeGroupMarker"/>
-<coolItem id="org.eclipse.cdt.ui.editor.CEditor" itemType="typeToolBarContribution" x="-1" y="-1"/>
+<coolItem id="org.eclipse.cdt.ui.editor.asm.AsmEditor" itemType="typeToolBarContribution" x="-1" y="-1"/>
+<coolItem id="org.eclipse.cdt.ui.editor.CEditor" itemType="typePlaceholder" x="-1" y="-1"/>
 <coolItem id="group.help" itemType="typeGroupMarker"/>
 <coolItem id="org.eclipse.ui.workbench.help" itemType="typeToolBarContribution" x="-1" y="-1"/>
 </coolbarLayout>
@@ -29,18 +30,13 @@
 <folder appearance="1" expanded="2">
 <presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
 <part id="0"/>
-<part id="1"/>
 </presentation>
 </folder>
 </info>
 </editorArea>
-<editor id="org.eclipse.cdt.ui.editor.CEditor" name="proc.c" partName="proc.c" path="/home/tengs/Desktop/3/lab6/kern/process/proc.c" title="proc.c" tooltip="lab6/kern/process/proc.c" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/lab6/kern/process/proc.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="6596" selectionTopPixel="2669"/>
-</editor>
-<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.CEditor" name="trap.c" partName="trap.c" path="/home/tengs/Desktop/3/lab6/kern/trap/trap.c" title="trap.c" tooltip="lab6/kern/trap/trap.c" workbook="DefaultEditorWorkbook">
-<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/lab6/kern/trap/trap.c"/>
-<editorState selectionHorizontalPixel="0" selectionLength="31" selectionOffset="8122" selectionTopPixel="3897"/>
+<editor activePart="true" focus="true" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="kernel.asm" partName="kernel.asm" path="/home/tengs/Desktop/3/lab7/obj/kernel.asm" title="kernel.asm" tooltip="lab7/obj/kernel.asm" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/lab7/obj/kernel.asm"/>
+<editorState selectionHorizontalPixel="0" selectionLength="0" selectionOffset="742094" selectionTopPixel="309128"/>
 </editor>
 </editors>
 <views>
@@ -50,8 +46,7 @@
 <view id="org.eclipse.search.ui.views.SearchView" partName="Search">
 <viewState isPinned="false">
 <view IMemento.internal.id="" org.eclipse.search.lastActivation="0"/>
-<view IMemento.internal.id="org.eclipse.search.text.FileSearchResultPage" org.eclipse.search.lastActivation="3" org.eclipse.search.resultpage.layout="2" org.eclipse.search.resultpage.limit="1000" org.eclipse.search.resultpage.sorting="2"/>
-<view IMemento.internal.id="org.eclipse.cdt.ui.pdomSearchViewPage" definitionColumnWidth="150" locationColumnWidth="300" matchColumnWidth="300" org.eclipse.search.lastActivation="4" org.eclipse.search.resultpage.layout="2" showEnclosingDefinitions="true"/>
+<view IMemento.internal.id="org.eclipse.search.text.FileSearchResultPage" org.eclipse.search.lastActivation="1" org.eclipse.search.resultpage.layout="2" org.eclipse.search.resultpage.limit="1000" org.eclipse.search.resultpage.sorting="2"/>
 </viewState>
 </view>
 <view id="org.eclipse.ui.views.TaskList" partName="Tasks">
@@ -70,7 +65,7 @@
 <viewState/>
 </view>
 </views>
-<perspectives activePart="org.eclipse.cdt.ui.editor.CEditor" activePerspective="org.eclipse.ui.resourcePerspective">
+<perspectives activePart="org.eclipse.ui.navigator.ProjectExplorer" activePerspective="org.eclipse.ui.resourcePerspective">
 <perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
 <descriptor class="org.eclipse.ui.internal.ide.application.ResourcePerspective" id="org.eclipse.ui.resourcePerspective" label="Resource"/>
 <alwaysOnActionSet id="org.eclipse.ui.cheatsheets.actionSet"/>
@@ -159,59 +154,18 @@
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab6/kern/schedule/default_sched.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab6/libs/skew_heap.h"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab6/kern/process/proc.h"/>
-<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab6/kern/schedule/sched.h"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab6/kern/process/proc.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab6/kern/schedule/sched.c"/>
 <editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab6/kern/trap/trap.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab6/kern/process/proc.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab7/kern/mm/pmm.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab7/kern/mm/vmm.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab7/kern/process/proc.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab7/kern/schedule/default_sched.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab7/kern/sync/monitor.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" path="/lab7/kern/trap/trap.c"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" path="/lab7/obj/kernel.asm"/>
 </editors>
-<item historyLabel="default_sched.c" index="0">
-<position info="not_deleted" x="2392" y="0"/>
-</item>
-<item historyLabel="skew_heap.h" index="1">
-<position info="not_deleted" x="1719" y="0"/>
-</item>
-<item historyLabel="default_sched.c" index="0">
-<position info="not_deleted" x="2583" y="0"/>
-</item>
-<item historyLabel="proc.h" index="2">
-<position info="not_deleted" x="2497" y="2"/>
-</item>
-<item historyLabel="default_sched.c" index="0">
-<position info="not_deleted" x="2583" y="0"/>
-</item>
-<item historyLabel="default_sched.c" index="0">
-<position info="not_deleted" x="2552" y="0"/>
-</item>
-<item historyLabel="default_sched.c" index="0">
-<position info="not_deleted" x="1906" y="0"/>
-</item>
-<item historyLabel="sched.h" index="3">
-<position info="not_deleted" x="1876" y="9"/>
-</item>
-<item historyLabel="sched.h" index="3">
-<position info="not_deleted" x="1957" y="0"/>
-</item>
-<item historyLabel="default_sched.c" index="0">
-<position info="not_deleted" x="4431" y="0"/>
-</item>
-<item historyLabel="proc.h" index="2">
-<position info="not_deleted" x="2744" y="13"/>
-</item>
-<item historyLabel="default_sched.c" index="0">
-<position info="not_deleted" x="4431" y="0"/>
-</item>
-<item historyLabel="proc.h" index="2">
-<position info="not_deleted" x="2744" y="13"/>
-</item>
-<item historyLabel="default_sched.c" index="0">
-<position info="not_deleted" x="4457" y="0"/>
-</item>
-<item historyLabel="proc.h" index="2">
-<position info="not_deleted" x="2928" y="13"/>
-</item>
-<item historyLabel="default_sched.c" index="0">
-<position info="not_deleted" x="4549" y="0"/>
-</item>
 <item historyLabel="proc.h" index="2">
 <position info="not_deleted" x="2928" y="13"/>
 </item>
@@ -260,59 +214,107 @@
 <item historyLabel="default_sched.c" index="0">
 <position info="not_deleted" x="5923" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="567" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="0" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="18167" y="0"/>
 </item>
-<item historyLabel="sched.c" index="5">
+<item historyLabel="sched.c" index="4">
 <position info="not_deleted" x="2039" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="9123" y="8"/>
 </item>
-<item historyLabel="sched.c" index="5">
+<item historyLabel="sched.c" index="4">
 <position info="not_deleted" x="1951" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="30391" y="0"/>
 </item>
-<item historyLabel="sched.c" index="5">
+<item historyLabel="sched.c" index="4">
 <position info="not_deleted" x="1951" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="29682" y="0"/>
 </item>
-<item historyLabel="trap.c" index="6">
+<item historyLabel="trap.c" index="5">
 <position info="not_deleted" x="8398" y="0"/>
 </item>
-<item historyLabel="proc.c" index="4">
+<item historyLabel="proc.c" index="3">
 <position info="not_deleted" x="6596" y="0"/>
 </item>
-<item active="true" historyLabel="trap.c" index="6">
+<item historyLabel="trap.c" index="5">
+<position info="not_deleted" x="8122" y="31"/>
+</item>
+<item historyLabel="proc.c" index="6">
 <position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="pmm.c" index="7">
+<position info="not_deleted" x="14915" y="9"/>
+</item>
+<item historyLabel="vmm.c" index="8">
+<position info="not_deleted" x="13243" y="9"/>
+</item>
+<item historyLabel="proc.c" index="9">
+<position info="not_deleted" x="14115" y="9"/>
+</item>
+<item historyLabel="proc.c" index="9">
+<position info="not_deleted" x="14927" y="42"/>
+</item>
+<item historyLabel="proc.c" index="9">
+<position info="not_deleted" x="22929" y="9"/>
+</item>
+<item historyLabel="default_sched.c" index="10">
+<position info="not_deleted" x="3973" y="9"/>
+</item>
+<item historyLabel="monitor.c" index="11">
+<position info="not_deleted" x="667" y="0"/>
+</item>
+<item historyLabel="monitor.c" index="11">
+<position info="not_deleted" x="1591" y="9"/>
+</item>
+<item historyLabel="trap.c" index="12">
+<position info="not_deleted" x="2205" y="0"/>
+</item>
+<item historyLabel="kernel.asm" index="13">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="kernel.asm" index="13">
+<position info="not_deleted" x="187814" y="9"/>
+</item>
+<item historyLabel="kernel.asm" index="13">
+<position info="not_deleted" x="187824" y="0"/>
+</item>
+<item historyLabel="kernel.asm" index="13">
+<position info="not_deleted" x="738639" y="9"/>
+</item>
+<item historyLabel="kernel.asm" index="13">
+<position info="not_deleted" x="738649" y="0"/>
+</item>
+<item active="true" historyLabel="kernel.asm" index="13">
+<position info="not_deleted" x="742084" y="9"/>
 </item>
 </navigationHistory>
 <input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
@@ -320,10 +322,6 @@
 <workbenchWindowAdvisor/>
 <actionBarAdvisor/>
 <trimLayout>
-<trimArea IMemento.internal.id="16384">
-<trimItem IMemento.internal.id="topLeft"/>
-<trimItem IMemento.internal.id="bottomLeft"/>
-</trimArea>
 <trimArea IMemento.internal.id="128">
 <trimItem IMemento.internal.id="org.eclipse.ui.internal.WorkbenchWindow.topBar"/>
 </trimArea>
@@ -331,11 +329,19 @@
 <trimItem IMemento.internal.id="org.eclise.ui.internal.FastViewBar"/>
 <trimItem IMemento.internal.id="org.eclipse.jface.action.StatusLineManager"/>
 <trimItem IMemento.internal.id="org.eclipse.ui.internal.progress.ProgressRegion"/>
-<trimItem IMemento.internal.id="bottomRight"/>
 </trimArea>
 </trimLayout>
 </window>
 <mruList>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.asm.AsmEditor" name="kernel.asm" tooltip="lab7/obj/kernel.asm">
+<persistable path="/lab7/obj/kernel.asm"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="monitor.c" tooltip="lab7/kern/sync/monitor.c">
+<persistable path="/lab7/kern/sync/monitor.c"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="pmm.c" tooltip="lab7/kern/mm/pmm.c">
+<persistable path="/lab7/kern/mm/pmm.c"/>
+</file>
 <file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="org.eclipse.cdt.ui.editor.CEditor" name="trap.c" tooltip="lab6/kern/trap/trap.c">
 <persistable path="/lab6/kern/trap/trap.c"/>
 </file>
