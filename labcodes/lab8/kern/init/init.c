@@ -17,7 +17,7 @@
 
 int kern_init(void) __attribute__((noreturn));
 void grade_backtrace(void);
-static void lab1_switch_test(void);
+//static void lab1_switch_test(void);
 
 int
 kern_init(void) {
@@ -75,7 +75,7 @@ void
 grade_backtrace(void) {
     grade_backtrace0(0, (int)kern_init, 0xffff0000);
 }
-
+/*
 static void
 lab1_print_cur_status(void) {
     static int round = 0;
@@ -114,4 +114,4 @@ lab1_switch_test(void) {
     lab1_switch_to_kernel();
     lab1_print_cur_status();
 }
-
+*/

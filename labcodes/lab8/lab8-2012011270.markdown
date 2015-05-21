@@ -1,0 +1,92 @@
+# Lab8 report
+
+## [练习1]
+完成读文件操作的实现
+```
+//先处理起始的没有对齐到块的部分,再以块为单位循环处理中间的部分,最后处理末尾剩余的部分
+	//每部分中都调用sfs_bmap_load_nolock函数得到blkno对应的inode
+	//编号,并调用sfs_rbuf或sfs_rblock函数读取数据(中间部分调用sfs_rblock,起始和末尾部分调用sfs_rbuf),调整相关变量。
+	//完成后如果offset+alen>din->fileinfo.size(写文件时会出现这种情况,读文件时不会出现这种情况,alen为实际读写
+	//的长度),则调整文件大小为offset+alen并设置dirty变量。
+	
+	//sfs_bmap_load_nolock函数将对应sfs_inode的第index个索引指向的block的索引值取出存到相应的指针指向的单元
+	//(ino_store)。它调用sfs_bmap_get_nolock来完成相应的操作。
+	//sfs_rbuf和sfs_rblock函数最终都调用sfs_rwblock_nolock函数完成操作。
+	//sfs_rwblock_nolock函数调用dop_io->disk0_io->disk0_read_blks_nolock->ide_read_secs完成对磁盘的操作。
+	//判断offset是否为一个block的开头
+blkoff = offset % SFS_BLKSIZE;
+if (blkoff != 0) {
+    size = (nblks != 0) ? (SFS_BLKSIZE - blkoff) : (endpos - offset);
+    //sfs_bmap_load_nolock : according to the DIR's inode and the logical index of block in inode, find the NO. of disk block.
+    if ((ret = sfs_bmap_load_nolock(sfs, sin, blkno, &ino)) != 0)
+        goto out;
+    //offset表示偏移量
+    if ((ret = sfs_buf_op(sfs, buf, size, ino, blkoff)) != 0)
+        goto out;
+    alen += size;
+    if (nblks == 0)
+        goto out;
+    buf += size;
+    blkno++; //读写操作的开始block编号
+    nblks--; //未读的block数目
+}
+//读取中间整块的blcok
+size = SFS_BLKSIZE;
+while (nblks != 0) {
+    if ((ret = sfs_bmap_load_nolock(sfs, sin, blkno, &ino)) != 0)
+        goto out;
+    //1表示读1个block
+    if ((ret = sfs_block_op(sfs, buf, ino, 1)) != 0)
+        goto out;
+    alen += size;
+    buf += size;
+    blkno++; //读写操作的开始block编号
+    nblks--; //未读的block数目
+}
+//判断endpos是否为一个block的开头
+if ((size = endpos % SFS_BLKSIZE) != 0) {
+    if ((ret = sfs_bmap_load_nolock(sfs, sin, blkno, &ino)) != 0)
+        goto out;
+    //0表示偏移量，即从该block头开始
+    if ((ret = sfs_buf_op(sfs, buf, size, ino, 0)) != 0)
+        goto out;
+    alen += size;
+}
+	
+```
+
+1-1 请在实验报告中给出设计实现”UNIX的PIPE机制“的概要设计方案
+```
+新增系统调用pipe_new，pipe_read，pipe_write来负责管道的新建，读入和输出。
+管道内（循环链表）维护如下信息：读指针，写指针，信号量和数据区。
+两个指针重合时为缓冲区空，写指针在读指针前一格时为缓冲区满。
+信号量保证有一个进程在写的时候其他进程不能操作，并可以让无法读写的时候让进程进入睡眠，在完成读写操作时可以唤醒相应的等待进程。
+```
+
+## [练习2]
+完成基于文件系统的执行程序机制的实现
+
+>- 要调用mm_create()函数和setup_pgdir()来创建mm和页表项.
+>- 之后利用load_icode_read来加载ELF文件(lab8新增）
+>- 调用mm_map来创建一个新的vma
+>- 利用pgdir_alloc_page为TEXT/DATA/BSS分配内存
+>- 调用mm_map建立用户栈，同时将参数压入栈
+>- 设置mm和cr3及用户空间的trapframe。
+
+2-1 请在实验报告中给出设计实现基于”UNIX的硬链接和软链接机制“的概要设计方案
+```
+硬链接：创建文件时，直接在inode中把其disk_inode位置指向实际的那个文件的磁盘inode位置。
+软链接：创建文件时，创建一个实际的文件，把其属性标记为软链接，文件中存储其指向的文件位置。打开文件时，若发现其属性为软链接，则打开其指向的位置，直至打开的文件不是软链接或达到迭代上限为止。具体的可以在inode中的in_type中新增一个表示软连接地址的变量，如inode_softLink，同时建立软链接之后inode的链接数不变，删除fileA时inode的链接数减一，减到0时文件丢失。
+```
+
+## [与参考答案的区别]
+```
+思路上没有太大区别，具体代码上略有区别。
+```
+
+## [实验中重要的知识点]
+```
+文件系统结构
+读文件
+执行程序（创建内存空间，加载ELF文件，更新堆栈，返回中断）
+```
