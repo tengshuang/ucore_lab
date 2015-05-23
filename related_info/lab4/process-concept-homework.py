@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 
+import os
 import sys
 from optparse import OptionParser
 import random
@@ -55,23 +56,51 @@ class scheduler:
     #change to READY STATE, the current proc's state should be expected
     #if pid==-1, then pid=self.curr_proc
     def move_to_ready(self, expected, pid=-1):
-        #YOUR CODE
+        #2012011270
+        temp = self.curr_proc
+        if pid!=-1:
+            temp = pid
+        if self.proc_info[temp][PROC_STATE]==expected:
+            self.proc_info[temp][PROC_STATE] = STATE_READY
+        else:
+            print 'move_to_ready error'
         return
 
     #change to RUNNING STATE, the current proc's state should be expected
     def move_to_running(self, expected):
-        #YOUR CODE
+        #2012011270
+        if self.proc_info[self.curr_proc][PROC_STATE] == expected:
+            self.proc_info[self.curr_proc][PROC_STATE] = STATE_RUNNING
+        else:
+            print 'move_to_running error'
         return
 
     #change to DONE STATE, the current proc's state should be expected
     def move_to_done(self, expected):
-        #YOUR CODE
+        #2012011270
+        if self.proc_info[self.curr_proc][PROC_STATE] == expected:
+            self.proc_info[self.curr_proc][PROC_STATE] = STATE_DONE
+        else:
+            print 'move_to_done error'
         return
 
     #choose next proc using FIFO/FCFS scheduling, If pid==-1, then pid=self.curr_proc
     def next_proc(self, pid=-1):
-        #YOUR CODE
-        return
+        #2012011270
+		if pid == -1:
+			pid = self.curr_proc
+		cur = pid
+		roundTime=0
+		cur = (cur+1)%len(self.proc_info)
+		while self.proc_info[cur][PROC_STATE] != STATE_READY:
+			self.curr_proc = (cur+1)%len(self.proc_info)
+			roundTime+=1
+			if roundTime==len(self.proc_info):
+				break
+		self.curr_proc = cur
+		if self.proc_info[self.curr_proc][PROC_STATE] == STATE_READY:
+			self.move_to_running(STATE_READY)
+		return
 
     def get_num_processes(self):
         return len(self.proc_info)
@@ -136,7 +165,9 @@ class scheduler:
             instruction_to_execute = ''
             if self.proc_info[self.curr_proc][PROC_STATE] == STATE_RUNNING and \
                    len(self.proc_info[self.curr_proc][PROC_CODE]) > 0:
-                #YOUR CODE
+                #2012011270
+                instruction_to_execute = self.proc_info[self.curr_proc][PROC_CODE].pop(0)
+                self.proc_info[self.curr_proc][PROC_PC] += 1
 
             # OUTPUT: print what everyone is up to
             print '%3d ' % clock_tick,
@@ -151,10 +182,15 @@ class scheduler:
             # if this is an YIELD instruction, switch to ready state
             # and add an io completion in the future
             if instruction_to_execute == DO_YIELD:
-                #YOUR CODE
+                #2012011270
+                self.move_to_ready(STATE_RUNNING)
+                self.next_proc()
+                # print '%3d ' % self.curr_proc
+				
 
             # ENDCASE: check if currently running thing is out of instructions
             self.check_if_done()
+            # os.system("pause")
         return (clock_tick)
         
 #
@@ -193,3 +229,4 @@ if options.print_stats:
     print ''
     print 'Stats: Total Time %d' % clock_tick
     print ''
+
