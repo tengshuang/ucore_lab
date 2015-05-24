@@ -3,7 +3,7 @@
 import random
 from optparse import OptionParser
 
-DEBUG = False
+DEBUG = True
 
 def dprint(str):
     if DEBUG:
@@ -245,17 +245,29 @@ class fs:
 
         inum = self.nameToInum[tfile]
 
-    # YOUR CODE, YOUR ID
+    # YOUR CODE, 2012011270
         # IF inode.refcnt ==1, THEN free data blocks first, then free inode, ELSE dec indoe.refcnt
         # remove from parent directory: delete from parent inum, delete from parent addr
     # DONE
 
+	if self.inodes[inum].getRefCnt() == 1:
+		
+		self.dataFree(inum)
+		self.inodeFree(inum)
+	else:
+		self.inodes[inum].decRefCnt()
+
+	parent_name = self.getParent(tfile)
+	parent_inum = self.nameToInum[parent_name]
+	self.inodes[parent_inum].decRefCnt()
+	self.data[parent_inum].delDirEntry(tfile)
+	
         # finally, remove from files list
         self.files.remove(tfile)
         return 0
 
     def createLink(self, target, newfile, parent):
-    # YOUR CODE, YOUR ID
+    # YOUR CODE, 2012011270
         # find info about parent
         # is there room in the parent directory?
         # if the newfile was already in parent dir?
@@ -263,10 +275,25 @@ class fs:
         # inc parent ref count
         # now add to directory
     # DONE
-        return tinum
+	parent_inum = self.nameToInum[parent]
+	if self.data[parent_inum].getFreeEntries() == 0:
+		return -1
+	
+	if self.data[parent_inum].dirEntryExists(newfile):
+		return -1
+
+	inum = self.nameToInum[target]
+	if inum == -1:
+		return -1
+
+	self.inodes[parent_inum].incRefCnt()
+	self.inodes[inum].incRefCnt()
+	self.data[parent_inum].addDirEntry(newfile, inum)
+
+        return inum
 
     def createFile(self, parent, newfile, ftype):
-    # YOUR CODE, YOUR ID
+    # YOUR CODE, 2012011270
         # find info about parent
         # is there room in the parent directory?
         # have to make sure file name is unique
@@ -276,18 +303,50 @@ class fs:
         # inc parent ref count
         # and add to directory of parent
     # DONE
+	parent_inum = self.nameToInum[parent]
+	if self.data[parent_inum].getFreeEntries() == 0:
+		return -1
+	
+	if self.data[parent_inum].dirEntryExists(newfile):
+		return -1
+
+	inum = self.inodeAlloc()
+	addr = -1
+	if ftype == 'd':
+		dnum = self.dataAlloc()
+		self.data[dnum].setType(ftype)
+		self.data[dnum].addDirEntry(".", inum)
+		self.data[dnum].addDirEntry("..", parent_inum)
+		self.inodes[inum].setAll(ftype, dnum, 2)
+	else:
+		self.inodes[inum].setAll(ftype, -1, 1)
+	
+	self.inodes[parent_inum].incRefCnt()
+	self.data[parent_inum].addDirEntry(newfile, inum)
+	self.nameToInum[newfile] = inum	
+
         return inum
 
     def writeFile(self, tfile, data):
         inum = self.nameToInum[tfile]
         curSize = self.inodes[inum].getSize()
         dprint('writeFile: inum:%d cursize:%d refcnt:%d' % (inum, curSize, self.inodes[inum].getRefCnt()))
-
-    # YOUR CODE, YOUR ID
+	dprint('data : %s'%(data))
+    # YOUR CODE, 2012011270
         # file is full?
         # no data blocks left
         # write file data
     # DONE
+	if curSize == 0:
+		dnum = self.dataAlloc()
+		if dnum == -1:
+			return -1;
+		self.inodes[inum].setAddr(dnum)
+		self.data[dnum].setType('f')
+	else:
+		dnum = self.inodes[inum].getAddr()
+
+	self.data[dnum].addData(data)
 
         if printOps:
             print 'fd=open("%s", O_WRONLY|O_APPEND); write(fd, buf, BLOCKSIZE); close(fd);' % tfile
@@ -466,5 +525,6 @@ f = fs(options.numInodes, options.numData)
 #
 
 f.run(options.numRequests)
+
 
 
