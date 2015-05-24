@@ -16,23 +16,27 @@ static struct run_queue *rq;
 static inline void
 sched_class_enqueue(struct proc_struct *proc) {
     if (proc != idleproc) {
+		cprintf("==== %d enqueue\n",proc -> pid);
         sched_class->enqueue(rq, proc);
     }
 }
 
 static inline void
 sched_class_dequeue(struct proc_struct *proc) {
+	cprintf("==== %d dequeue\n",proc -> pid);
     sched_class->dequeue(rq, proc);
 }
 
 static inline struct proc_struct *
 sched_class_pick_next(void) {
+	cprintf("==== %d pick next\n",current -> pid);
     return sched_class->pick_next(rq);
 }
 
 static void
 sched_class_proc_tick(struct proc_struct *proc) {
     if (proc != idleproc) {
+		cprintf("==== %d tick to check time slice\n",proc -> pid);
         sched_class->proc_tick(rq, proc);
     }
     else {
@@ -65,6 +69,7 @@ wakeup_proc(struct proc_struct *proc) {
             proc->state = PROC_RUNNABLE;
             proc->wait_state = 0;
             if (proc != current) {
+				cprintf("==== %d wakeup\n",proc -> pid);
                 sched_class_enqueue(proc);
             }
         }
@@ -81,6 +86,7 @@ schedule(void) {
     struct proc_struct *next;
     local_intr_save(intr_flag);
     {
+		cprintf("==== schedule====\n");
         current->need_resched = 0;
         if (current->state == PROC_RUNNABLE) {
             sched_class_enqueue(current);
@@ -148,6 +154,7 @@ run_timer_list(void) {
     bool intr_flag;
     local_intr_save(intr_flag);
     {
+		cprintf("==== timer ====\n");
         list_entry_t *le = list_next(&timer_list);
         if (le != &timer_list) {
             timer_t *timer = le2timer(le, timer_link);
@@ -162,6 +169,7 @@ run_timer_list(void) {
                 else {
                     warn("process %d's wait_state == 0.\n", proc->pid);
                 }
+				cprintf("==== wait time used up:  %d====\n",timer->proc->pid);
                 wakeup_proc(proc);
                 del_timer(timer);
                 if (le == &timer_list) {

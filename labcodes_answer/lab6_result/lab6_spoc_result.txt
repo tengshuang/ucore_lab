@@ -1,0 +1,92 @@
+++ setup timer interrupts
++++++++ trap ++++++++
+==== timer ====
+==== schedule====
+==== 0 pick next
+==== 1 dequeue
+==== switch from 0 to 1
+==== 2 wakeup
+==== 2 enqueue
+==== schedule====
+==== 1 pick next
+==== 2 dequeue
+==== switch from 1 to 2
+kernel_execve: pid = 2, name = "exit".
++++++++ trap ++++++++
+==== timer ====
+==== 2 tick to check time slice
++++++++ trap ++++++++
+==== timer ====
+==== 2 tick to check time slice
+I am the parent. Forking the child...
+==== 3 wakeup
+==== 3 enqueue
+I am parent, fork a child pid 3
+I am the parent, waiting now..
+==== schedule====
+==== 2 pick next
+==== 3 dequeue
+==== switch from 2 to 3
++++++++ trap ++++++++
+==== timer ====
+==== 3 tick to check time slice
+I am the child.
+==== schedule====
+==== 3 enqueue
+==== 3 pick next
+==== 3 dequeue
+==== schedule====
+==== 3 enqueue
+==== 3 pick next
+==== 3 dequeue
+==== schedule====
+==== 3 enqueue
+==== 3 pick next
+==== 3 dequeue
+==== schedule====
+==== 3 enqueue
+==== 3 pick next
+==== 3 dequeue
++++++++ trap ++++++++
+==== timer ====
+==== 3 tick to check time slice
+==== schedule====
+==== 3 enqueue
+==== 3 pick next
+==== 3 dequeue
+==== schedule====
+==== 3 enqueue
+==== 3 pick next
+==== 3 dequeue
+==== schedule====
+==== 3 enqueue
+==== 3 pick next
+==== 3 dequeue
++++++++ trap ++++++++
+==== timer ====
+==== 3 tick to check time slice
+==== 2 wakeup
+==== 2 enqueue
+==== schedule====
+==== 3 pick next
+==== 2 dequeue
+==== switch from 3 to 2
+waitpid 3 ok.
+exit pass.
+==== 1 wakeup
+==== 1 enqueue
+==== schedule====
+==== 2 pick next
+==== 1 dequeue
+==== switch from 2 to 1
+==== schedule====
+==== 1 enqueue
+==== 1 pick next
+==== 1 dequeue
++++++++ trap ++++++++
+==== timer ====
+==== 1 tick to check time slice
+all user-mode processes have quit.
+init check memory pass.
+kernel panic at kern/process/proc.c:461:
+    initproc exit.
