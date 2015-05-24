@@ -1,0 +1,39 @@
+Produce Tape, Battery
+Listener1: Buy Tape, Battery. Listening
+Produce Walkman, Tape
+Listener3: Buy Walkman, Tape. Listening
+Produce Tape, Battery
+Listener1: Buy Tape, Battery. Listening
+Produce Walkman, Battery
+Listener2: Buy Walkman, Battery. Listening
+Produce Walkman, Tape
+Listener3: Buy Walkman, Tape. Listening
+Produce Walkman, Battery
+Listener2: Buy Walkman, Battery. Listening
+Produce Tape, Battery
+Listener1: Buy Tape, Battery. Listening
+Produce Walkman, Battery
+Listener2: Buy Walkman, Battery. Listening
+Produce Walkman, Battery
+Listener2: Buy Walkman, Battery. Listening
+Produce Tape, Battery
+Listener1: Buy Tape, Battery. Listening
+Produce Tape, Battery
+Listener1: Buy Tape, Battery. Listening
+Produce Walkman, Tape
+Listener3: Buy Walkman, Tape. Listening
+Produce Walkman, Tape
+Listener3: Buy Walkman, Tape. Listening
+Produce Walkman, Battery
+Listener2: Buy Walkman, Battery. Listening
+Produce Walkman, Tape
+Listener3: Buy Walkman, Tape. Listening
+Produce Walkman, Tape
+Listener3: Buy Walkman, Tape. Listening
+Produce Walkman, Tape
+Listener3: Buy Walkman, Tape. Listening
+Produce Walkman, Battery
+Listener2: Buy Walkman, Battery. Listening
+Produce Walkman, Tape
+Listener3: Buy Walkman, Tape. Listening
+Produce Walkman, Tape
