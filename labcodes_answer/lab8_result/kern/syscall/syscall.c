@@ -88,6 +88,7 @@ sys_sleep(uint32_t arg[]) {
 
 static int
 sys_open(uint32_t arg[]) {
+	cprintf("==== lab8 SPOC open file：: sys_open ====\n");
     const char *path = (const char *)arg[0];
     uint32_t open_flags = (uint32_t)arg[1];
     return sysfile_open(path, open_flags);
@@ -101,6 +102,7 @@ sys_close(uint32_t arg[]) {
 
 static int
 sys_read(uint32_t arg[]) {
+	//cprintf("==== lab8 SPOC open file：: sys_read ====\n");
     int fd = (int)arg[0];
     void *base = (void *)arg[1];
     size_t len = (size_t)arg[2];
@@ -197,6 +199,7 @@ syscall(void) {
             arg[3] = tf->tf_regs.reg_edi;
             arg[4] = tf->tf_regs.reg_esi;
             tf->tf_regs.reg_eax = syscalls[num](arg);
+			cprintf("==== lab8 SPOC open file：: syscall ====\n");
             return ;
         }
     }

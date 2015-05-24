@@ -158,6 +158,7 @@ int
 ide_read_secs(unsigned short ideno, uint32_t secno, void *dst, size_t nsecs) {
     assert(nsecs <= MAX_NSECS && VALID_IDE(ideno));
     assert(secno < MAX_DISK_NSECS && secno + nsecs <= MAX_DISK_NSECS);
+	cprintf("==== lab8 SPOC open file：: ide_read_secs ====\n");
     unsigned short iobase = IO_BASE(ideno), ioctrl = IO_CTRL(ideno);
 
     ide_wait_ready(iobase, 0);
