@@ -54,16 +54,18 @@ idt_init(void) {
       *     You don't know the meaning of this instruction? just google it! and check the libs/x86.h to know more.
       *     Notice: the argument of lidt is idt_pd. try to find it!
       */
-	extern uintptr_t __vectors[];
-    int i, n = sizeof(idt) / sizeof(struct gatedesc);
-    for (i = 0; i < n; i ++) {
-    	SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);
-    }
-    SETGATE(idt[T_SYSCALL], 1, GD_KTEXT, __vectors[T_SYSCALL], DPL_USER);
-    lidt(&idt_pd);
-     /* LAB5 2012011270 */
+     /* LAB5 2012011270 */ 
      //you should update your lab1 code (just add ONE or TWO lines of code), let user app to use syscall to get the service of ucore
      //so you should setup the syscall interrupt gate in here
+
+	extern uintptr_t __vectors[];
+	int i = 0;
+	// 其中DPL_USER特权级为3, DPL_KERNEL特权级为0
+	for (i=0; i<(sizeof(idt)/sizeof(struct gatedesc)); i++) //参考答案做了相应的修改
+		SETGATE(idt[i], 0, GD_KTEXT, __vectors[i], DPL_KERNEL);
+	//SETGATE(idt[T_SWITCH_TOK], 0, GD_KTEXT, __vectors[T_SWITCH_TOK], DPL_USER);
+	SETGATE(idt[T_SYSCALL], 1, GD_KTEXT, __vectors[T_SYSCALL], DPL_USER);
+	lidt(&idt_pd);
 }
 
 static const char *
@@ -240,10 +242,18 @@ trap_dispatch(struct trapframe *tf) {
         /* you should upate you lab6 code
          * IMPORTANT FUNCTIONS:
 	     * run_timer_list
+	     *----------------------
+	     * you should update your lab5 code (just add ONE or TWO lines of code):
+         *    Every tick, you should update the system time, iterate the timers, and trigger the timers which are end to call scheduler.
+         *    You can use one funcitons to finish all these things.
          */
-        ticks ++;
+    	ticks++;
+        //if (ticks % TICK_NUM == 0) // 其中TICK_NUM = 100
+        	//print_ticks();
         assert(current != NULL);
+        //current->need_resched = 1;
         run_timer_list();
+
         break;
     case IRQ_OFFSET + IRQ_COM1:
         c = cons_getc();
@@ -253,7 +263,7 @@ trap_dispatch(struct trapframe *tf) {
         c = cons_getc();
         cprintf("kbd [%03d] %c\n", c, c);
         break;
-    //LAB1 CHALLENGE 1 : YOUR CODE you should modify below codes.
+    //LAB1 CHALLENGE 1 : 2012011270 you should modify below codes.
     case T_SWITCH_TOU:
     case T_SWITCH_TOK:
         panic("T_SWITCH_** ??\n");

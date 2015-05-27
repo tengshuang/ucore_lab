@@ -361,6 +361,14 @@ pmm_init(void) {
 //  la:     the linear address need to map
 //  create: a logical value to decide if alloc a page for PT
 // return vaule: the kernel virtual address of this pte
+
+//get_pte：得到得到页表项，并返回虚拟地址la对应的pte；如果线性地址或逻辑地址没有对应的页表项，则需要去创建一个页表项
+//参数：
+//  pgdir: PDT的内核虚拟基址
+//  la: 需要去映射的线性地址
+//  create: 标记时候去创建一个页表项
+//返回值：该页表项的内核虚拟地址
+
 pte_t *
 get_pte(pde_t *pgdir, uintptr_t la, bool create) {
     /* LAB2 EXERCISE 2: 2012011270
@@ -396,21 +404,29 @@ get_pte(pde_t *pgdir, uintptr_t la, bool create) {
     }
     return NULL;          // (8) return page table entry
 #endif
-    pde_t *pdep = &pgdir[PDX(la)];//在一级页表项中查找二级页表的物理内存页 la为逻辑地址
-    if (!(*pdep & PTE_P)) {//如果二级页表项不存在 PTE_P = 1 表示物理内存存在
-        struct Page *page;
-        if (!create || (page = alloc_page()) == NULL) {
-            return NULL; // 若不需要创建或者分配物理页失败，返回NULL 否则获得空白物理页给页表
-        }
-        set_page_ref(page, 1);//创建映射
-        uintptr_t pa = page2pa(page); //得到这个path的物理地址
-        memset(KADDR(pa), 0, PGSIZE); //物理地址清零
-        //*pdep = page2pa(page) | PTE_USER //设置用户权限
-        *pdep = pa | PTE_U | PTE_W | PTE_P; //页表项的内容
-    }
-    //PDE_ADDR : pa + 0xC0000000
-    return &((pte_t *)KADDR(PDE_ADDR(*pdep)))[PTX(la)]; //返回页表物理地址
+	int index = PDX(la);
+	pde_t *pdep = &pgdir[index];
+
+	bool isPresent = (*pdep) & PTE_P;
+	if (isPresent == 0) { //页表项不存在
+		if (create) { //创建是必要的
+			struct Page *page = alloc_page();
+			if (page == NULL) { //创建出错
+				return NULL;
+			}
+			set_page_ref(page,1);
+			uintptr_t pa = page2pa(page); //得到该页表对应的物理地址
+			memset(KADDR(pa), 0, PGSIZE); //PGSIZE为4096个字节
+			*pdep = pa | PTE_U | PTE_W | PTE_P;
+		}
+		else {
+			return NULL;
+		}
+	}
+	index = PTX(la);
+	return &((pte_t *)KADDR(PDE_ADDR(*pdep)))[index];
 }
+
 
 //get_page - get related Page struct for linear address la using PDT pgdir
 struct Page *
@@ -428,6 +444,10 @@ get_page(pde_t *pgdir, uintptr_t la, pte_t **ptep_store) {
 //page_remove_pte - free an Page sturct which is related linear address la
 //                - and clean(invalidate) pte which is related linear address la
 //note: PT is changed, so the TLB need to be invalidate 
+
+//page_remove_pte：释放与线性地址la相关的页表，并清楚与la相关的pte
+//注意：PT改变，TLB将失效
+
 static inline void
 page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep) {
     /* LAB2 EXERCISE 3: 2012011270
@@ -455,10 +475,13 @@ page_remove_pte(pde_t *pgdir, uintptr_t la, pte_t *ptep) {
                                   //(6) flush tlb
     }
 #endif
-	if (*ptep & PTE_P) {
+	bool isPresent = (*ptep) & PTE_P;
+	if (isPresent == 1) {
 		struct Page *page = pte2page(*ptep);
-		if (page_ref_dec(page) == 0)
+		page_ref_dec(page);
+		if (page->ref == 0) {
 			free_page(page);
+		}
 		*ptep = 0;
 		tlb_invalidate(pgdir, la);
 	}
@@ -521,14 +544,14 @@ copy_range(pde_t *to, pde_t *from, uintptr_t start, uintptr_t end, bool share) {
             if ((nptep = get_pte(to, start, 1)) == NULL) {
                 return -E_NO_MEM;
             }
-			uint32_t perm = (*ptep & PTE_USER);
-			//get page from ptep
-			struct Page *page = pte2page(*ptep);
-			// alloc a page for process B
-			struct Page *npage=alloc_page();
-			assert(page!=NULL);
-			assert(npage!=NULL);
-			int ret=0;
+        uint32_t perm = (*ptep & PTE_USER);
+        //get page from ptep
+        struct Page *page = pte2page(*ptep);
+        // alloc a page for process B
+        struct Page *npage=alloc_page();
+        assert(page!=NULL);
+        assert(npage!=NULL);
+        int ret=0;
 			/* LAB5:EXERCISE2 2012011270
 			 * replicate content of page to npage, build the map of phy addr of nage with the linear addr start
 			 *
@@ -543,9 +566,9 @@ copy_range(pde_t *to, pde_t *from, uintptr_t start, uintptr_t end, bool share) {
 			 * (3) memory copy from src_kvaddr to dst_kvaddr, size is PGSIZE
 			 * (4) build the map of phy addr of  nage with the linear addr start
 			 */
-			void * kva_src = page2kva(page);
-			void * kva_dst = page2kva(npage);
-			memcpy(kva_dst, kva_src, PGSIZE);
+			void * src_kvaddr = page2kva(page);
+			void * dst_kvaddr = page2kva(npage);
+			memcpy(dst_kvaddr, src_kvaddr, PGSIZE);
 			ret = page_insert(to, npage, start, perm);
 			assert(ret == 0);
         }
